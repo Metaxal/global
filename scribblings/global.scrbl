@@ -42,6 +42,8 @@ By contrast to parameters, globals
  @item{are not thread safe.}
 }
 
+Suggestions, questions or issues? File an @hyperlink["https://github.com/Metaxal/global/issues"]{issue}.
+
 
 
 @defproc[(make-global [name symbol?]
