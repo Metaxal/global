@@ -1,7 +1,7 @@
 global
 ======
 
-Define, get, set global variables, and easily generate command line arguments.
+Define, get, set global variables, and easily generate command line parsers.
 
 # Installation
 From the command line:
