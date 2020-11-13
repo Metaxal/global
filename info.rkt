@@ -1,8 +1,12 @@
 #lang info
 (define collection "global")
-(define deps '("base"))
+(define deps '("text-table"
+               "base"))
 (define build-deps '("scribble-lib" "racket-doc" "rackunit-lib"))
 (define scribblings '(("scribblings/global.scrbl" ())))
 (define pkg-desc "Description Here")
 (define version "0.0")
-(define pkg-authors '(laurent))
+(define pkg-authors '(lorseau))
+
+(define test-omit-paths '("examples/" "tests/define-global-stress-test.rkt"))
+(define test-include-paths '("tests/out-of-scope.rkt"))
