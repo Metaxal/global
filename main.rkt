@@ -4,16 +4,24 @@
          racket/list
          racket/cmdline
          racket/port
-         racket/string)
+         racket/string
+         text-table)
 
 (provide define-global
          make-global
-         global
+
+         global?
+         global-name
+         global-help
+         global-valid?
+         global-string->value
+         global-more-commands
+         
          (rename-out [set-global-get! global-set!])
          global-update!
          global-unsafe-update!
-         global->cmd-line
-         globals
+         get-globals
+         global->cmd-line-rule
          globals->command-line
          globals->assoc
          globals-interact
@@ -45,7 +53,10 @@
 
 (define globals '())
 (define (add-global! g)
-  (set! globals (cons g globals)))
+  (set! globals (cons (make-weak-box g) globals)))
+
+(define (get-globals)
+  (reverse (filter-map weak-box-value globals)))
 
 (define (make-global name init help valid? string->value [more-commands '()])
   (define g
@@ -60,54 +71,44 @@
 
 ;; Helper to avoid typing the name twice (and ensure consistency).
 ;; Use `make-global` to have more flexibility on the variable name and the command-line name.
-(define-syntax-rule (define-global var args ...)
+(define-syntax-rule (define-global var args ...) 
   (define var
     (make-global 'var args ...)))
 
-(define (globals->assoc [globals (reverse globals)])
+(define (globals->assoc [globals (get-globals)])
   (map (λ (g) (cons (global-name g) (g)))
        globals))
 
 ;; See "Reading Booleans" in the Reference.
-;; We add some common cases
+;; We add some common cases for the command line
 (define (string->boolean s)
-  (if (member s '("#false" "#f" "#F" "false" "False" "FALSE"))
-      #f
-      #t))
+  (and (member (string-downcase (string-trim s))
+              '("#f" "#false" "false"))
+       #t))
 
-;; Returns a rule for parse-command-line
-;; If the validation of g matches bool? then it is presented
-;; as a boolean flag that inverts the current value of g.
-;; For example, (define-global abool #t "abool" boolean? string->boolean)
-;; (only) produces the flag "--no-abool" which sets abool to #f,
-;; while (define-global abool #f "abool" boolean? string->boolean)
-;; (only) produces the flag "--abool" which sets abool to #t.
-;; Note that for booleans more-commands are used as is (without being negated).
-;; Setting bool? to #f treats boolean globals as normal flags that take
-;; one argument.
-;; By default, name->string removes some leading and trailing special characters.
-(define (global->cmd-line g
-                          #:name->string
-                          [name->string (λ (n) (string-trim (symbol->string n)
-                                                            #px"[\\s*?]+"))]
-                          #:boolean-valid? [bool? boolean?]
-                          #:boolean-no-prefix [no-prefix "--no-~a"])
+;; Returns a rule for parse-command-line.
+(define (global->cmd-line-rule g
+                               #:name->string
+                               [name->string (λ (n) (string-trim (symbol->string n)
+                                                                 #px"[\\s*?]+"))]
+                               #:boolean-valid? [bool? boolean?]
+                               #:boolean-no-prefix [no-prefix "--no-~a"])
   (if (equal? (global-valid? g) bool?)
-      `[(,(format (if (g) no-prefix "--~a")
-                  (name->string (global-name g)))
-         ,@(global-more-commands g))
-        ,(λ (flag) (global-unsafe-update! g not))
-        (,(global-help g))]
-      `[(,(format "--~a" (name->string (global-name g)))
-         ,@(global-more-commands g))
-        ,(λ (flag v) (g ((global-string->value g) v)))
-        (,(global-help g)
-         ,(format "~a" (g)))]))
+    `[(,(format (if (g) no-prefix "--~a")
+                (name->string (global-name g)))
+       ,@(global-more-commands g))
+      ,(λ (flag) (global-unsafe-update! g not))
+      (,(global-help g))]
+    `[(,(format "--~a" (name->string (global-name g)))
+       ,@(global-more-commands g))
+      ,(λ (flag v) (g ((global-string->value g) v)))
+      (,(global-help g)
+       ,(format "~a" (g)))]))
 
 ;; Simple command line with just the globals
 ;; TODO: multi with `update` of the global
 ;; See `global->cmd-line` for bool? and no-prefix.
-(define (globals->command-line #:globals [globals (reverse globals)]
+(define (globals->command-line #:globals [globals (get-globals)]
                                #:boolean-valid? [bool? boolean?]
                                #:boolean-no-prefix [no-prefix "--no-~a"]
                                #:mutex-groups [mutex-groups '()]
@@ -115,7 +116,7 @@
                                #:program [program "<prog>"]
                                . arg-names)
   (define (g->cmd g)
-    (global->cmd-line g #:boolean-valid? bool? #:boolean-no-prefix no-prefix))
+    (global->cmd-line-rule g #:boolean-valid? bool? #:boolean-no-prefix no-prefix))
   (parse-command-line
    program argv
    (cons
@@ -127,15 +128,13 @@
    (λ (flag-accum . rargs) rargs)
    arg-names))
 
-(require text-table)
-
 (define (simple-table->string table)
   (table->string
    table
    #:align 'left
    #:border-style 'space #:row-sep? #f #:framed? #f))
 
-(define (globals-help [globals (reverse globals)])
+(define (globals-help [globals (get-globals)])
   (if (empty? globals)
       "No globals."
       (simple-table->string
@@ -147,7 +146,7 @@
                    (string-join h "\n")
                    h))))))
 
-(define (globals-values [globals (reverse globals)])
+(define (globals-values [globals (get-globals)])
   (if (empty? globals)
       "No globals."
       (simple-table->string
@@ -155,7 +154,7 @@
          (list (global-name g) ":" (format "~v" (g)))))))
 
 ;; User interaction loop to read and write globals
-(define (globals-interact [globals (reverse globals)])
+(define (globals-interact [globals (get-globals)])
   (define names (map global-name globals))
   (define (find-global name)
     (findf (λ (g) (eq? name (global-name g))) globals))
@@ -197,10 +196,3 @@
          [else
           (displayln "Too many arguments.")])
        (loop)])))
-
-;; Example.
-;; Run this module with
-;; racket define-global.rkt --help
-;; racket define-global.rkt --color blue
-;; racket define-global.rkt --color orange   # error
-;; racket define-global.rkt --no-bbool --abool
