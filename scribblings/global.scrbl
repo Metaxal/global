@@ -1,5 +1,6 @@
 #lang scribble/manual
 @require[@for-label[global
+                    racket/cmdline
                     racket/base]]
 
 @title{global: Global variables with command-line interaction}
@@ -66,7 +67,7 @@ More command line flags for this global variable can be specified in the @racket
 }
 
 @defform[(define-global var )]{
-Shorthand for @racket[(define my-var (make-global 'my-var ...))]}
+Shorthand for @racket[(define var (make-global 'var ...))]}
 
 
 @defproc*[([(global? [g any/c]) boolean?]
@@ -76,7 +77,7 @@ Shorthand for @racket[(define my-var (make-global 'my-var ...))]}
            [(global-string->value [g global?]) (-> string? any/c)]
            [(global-more-commands [g global?]) (listof string?)]
            )]{
-Predicate and field accessors of the global struct object.}
+Predicate and field accessors of the global's fields.}
 
 
 
@@ -100,7 +101,7 @@ Returns the list of globals that have not gone out of scope (even if they cannot
 calling @racket[get-globals]).
 
 
-Note: If one of the transitively require modules
+@bold{Note:} If one of the transitively require modules
 has defined a local(!) global that has become unreachable at call site of
 @racket[(get-globals)],
 it is advised to precede the call with @racket[(collect-garbage)] to make sure
@@ -116,16 +117,19 @@ that the local global does not appear in the returned list.
          list?]{
 Returns a rule to be used with @racket[parse-command-line].
 
-If the validation of @racketid[g] is @racket[equal?] to @racketid[bool?] then it is presented
-as a boolean flag that inverts the @emph{current} value of @racketid[g].
+ Booleans are treated specially on the command line, as they don't require arguments.
+If the validation of @racketid[g] is @racket[equal?] to @racketid[bool?] then
+the returned rule corresponds to a boolean flag that inverts the @emph{current} value of @racketid[g].
 For example,
 if @racket[bool?] is @racket[boolean?],
 then, for
- @racket[(define-global abool #t "abool" boolean? string->boolean)],
+ @racketblock[(define-global abool #t "abool" boolean? string->boolean)]
+ the call
  @racket[(global->cmd-line-rule (list abool))]
  (only) produces a rule with the flag @racket["--no-abool"] which sets @racketid[abool] to @racket[#f]
  if present on the command line,
-while for @racket[(define-global abool #f "abool" boolean? string->boolean)]
+while for
+ @racketblock[(define-global abool #f "abool" boolean? string->boolean)]
 it (only) produces the flag @racket["--abool"] which sets abool to @racket[#t].
 Note that for booleans, @racket[more-commands] are used as is (without being negated).
 Setting @racketid[bool?] to @racket[#f] treats boolean globals as normal flags that take
@@ -141,8 +145,15 @@ By default, @racketid[name->string] removes some leading and trailing special ch
                                 [#:program program string? "<prog>"]
                                 [trailing-arg-name string?] ...)
          any]{
-Produces a command line parser via @racket[parse-command-line].
-See @racket[global->cmd-line-rule] for more information.
+Produces a command line parser via @racket[parse-command-line]
+ (refer to the latter for general information).
+
+See @racket[global->cmd-line-rule] for more information about boolean flags.
+
+Each list of globals within @racket[mutex-groups] are placed in a separate @racketid{once-any} group in
+@racket[parse-command-line].
+
+Repeated flags are not supported by globals.
 
 See also the note in @racket[(get-globals)].
 }
@@ -150,7 +161,7 @@ See also the note in @racket[(get-globals)].
 @defproc[(globals->assoc [globals (listof global?) (get-globals)]) (listof (cons/c symbol? any/c))]{
 Returns an association list of the global name and its value.}
 
-@defproc[((globals-interact [globals (get-globals)])) void?]{
+@defproc[(globals-interact [globals (get-globals)]) void?]{
 Produces a command-line interaction with the user to read and write values of @racket[globals].}
 
 @defproc[(string->boolean [s string?]) boolean?]{
