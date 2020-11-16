@@ -8,9 +8,11 @@
 
 @defmodule[global]
 
-@bold{Usage:} Use @racket[define-global] to define global variables (possibly in different modules),
-and optionally use @racket[globals->command-line] to automatically generate a command line parser
-for all the globals defined in modules that are transitively required.
+@bold{Usage:} Use @racket[define-global] to define global variables (possibly in different modules)
+with cross-module getters and setters.
+@racket[globals->command-line] automatically generates a command line parser
+for all the globals defined in modules that are transitively required,
+and @racket[globals-interact] generates and textual interaction for reading and writing globals.
 
 Here's a minimal expample that defines the global @racketid[*burgers*]
 and generates a command-line parser:
@@ -42,6 +44,9 @@ and maybe
 
 @bold{Note:} A similar example is included with the package and can be run with
 @codeblock{racket -l global/examples/minimal -- --help}
+
+For a more extensive example, including a use of @racket[globals-interact], try
+@codeblock{racket -l global/examples/example -- --help}
 
 
 @bold{Additional remarks:}
