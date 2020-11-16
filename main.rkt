@@ -1,6 +1,7 @@
 #lang racket/base
 (require (for-syntax racket/base
                      racket/syntax)
+         racket/contract/base
          racket/list
          racket/cmdline
          racket/port
@@ -8,22 +9,31 @@
          text-table)
 
 (provide define-global
-         make-global
 
          global?
-         global-name
-         global-help
-         global-valid?
-         global-string->value
-         global-more-commands
          
-         (rename-out [set-global-get! global-set!])
-         global-update!
+         (contract-out
+          [make-global (-> symbol?
+                           any/c
+                           (or/c string? (listof string?))
+                           procedure?
+                           procedure?
+                           (listof string?)
+                           global?)]
+          [global-name              (-> global? any)]
+          [global-help              (-> global? any)]
+          [global-valid?            (-> global? any)]
+          [global-string->value     (-> global? any)]
+          [global-more-commands     (-> global? any)]
+          [global-set!              (-> global? any/c any)]
+          [global-update!           (-> global? procedure? any)]
+          [global-set-from-string!  (-> global? string? any)]
+          [globals->assoc           (-> (listof global?) any)])
+         (rename-out [set-global-get! global-unsafe-set!])
          global-unsafe-update!
          get-globals
          global->cmd-line-rule
          globals->command-line
-         globals->assoc
          globals-interact
          string->boolean
          )
@@ -44,6 +54,9 @@
      (unless ((global-valid? self) v)
        (error (global-name self) "invalid value for set!: ~v" v))
      (set-global-get! self v)]))
+
+(define (global-set! g v)
+  (g v))
 
 (define (global-update! g proc)
   (g (proc (global-get g))))
@@ -86,6 +99,16 @@
               '("#f" "#false" "false"))
        #t))
 
+(define (global-set-from-string! g str)
+  (define v ((global-string->value g) str))
+  (unless ((global-valid? g) v)
+    (error 'global-set-from-string!
+           "Invalid value for global ~a: ~v (string value: ~s)"
+           (global-name g)
+           v
+           str))
+  (set-global-get! g v))
+
 ;; Returns a rule for parse-command-line.
 (define (global->cmd-line-rule g
                                #:name->string
@@ -93,6 +116,8 @@
                                                                  #px"[\\s*?]+"))]
                                #:boolean-valid? [bool? boolean?]
                                #:boolean-no-prefix [no-prefix "--no-~a"])
+  (unless (global? g)
+    (raise-argument-error 'global->cmd-line-rule global? g))
   (if (equal? (global-valid? g) bool?)
     `[(,(format (if (g) no-prefix "--~a")
                 (name->string (global-name g)))
@@ -101,7 +126,7 @@
       (,(global-help g))]
     `[(,(format "--~a" (name->string (global-name g)))
        ,@(global-more-commands g))
-      ,(λ (flag v) (g ((global-string->value g) v)))
+      ,(λ (flag v) (global-set-from-string! g v))
       (,(global-help g)
        ,(format "~a" (g)))]))
 
