@@ -1,7 +1,7 @@
-global
+global: Global variables for Racket
 ======
 
-Define, get, set global variables, and easily generate command line parsers.
+Define, get, set global variables, and easily generate command line parsers and user interaction to print/set globals.
 
 # Installation
 From the command line:
