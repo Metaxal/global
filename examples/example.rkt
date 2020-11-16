@@ -54,6 +54,11 @@
   string->symbol
   '("-c"))
 
+(define-global *interact* #f
+  "Start global-interaction at the end of the program?"
+  boolean?
+  string->boolean)
+
 (displayln "Global values before processing the command line:")
 (globals->assoc)
 
@@ -72,3 +77,7 @@
 (*color* 'yellow)
 (*color*)
 
+(when (*interact*)
+  (newline)
+  (displayln "Starting globals-interaction. Try 'help'.")
+  (globals-interact))

@@ -28,7 +28,7 @@
           [global-set!              (-> global? any/c any)]
           [global-update!           (-> global? procedure? any)]
           [global-set-from-string!  (-> global? string? any)]
-          [globals->assoc           (-> (listof global?) any)])
+          [globals->assoc           (->* [] [(listof global?)] any)])
          (rename-out [set-global-get! global-unsafe-set!])
          global-unsafe-update!
          get-globals
