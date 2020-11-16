@@ -13,13 +13,13 @@
          global?
          
          (contract-out
-          [make-global (-> symbol?
-                           any/c
-                           (or/c string? (listof string?))
-                           procedure?
-                           procedure?
-                           (listof string?)
-                           global?)]
+          [make-global (->* [symbol?
+                             any/c
+                             (or/c string? (listof string?))
+                             procedure?
+                             procedure?]
+                            [(listof string?)]
+                            global?)]
           [global-name              (-> global? any)]
           [global-help              (-> global? any)]
           [global-valid?            (-> global? any)]
