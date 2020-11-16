@@ -37,5 +37,9 @@ A similar example is included and you can try it directly (after installing the 
 ```shell
 racket -l global/examples/minimal -- --burgers 3
 ```
+For a more extensive example, try
+```shell
+racket -l global/examples/examples -- --help
+```
 
 See the [docs](https://pkg-build.racket-lang.org/doc/global@global/index.html).
