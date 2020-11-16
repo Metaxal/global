@@ -194,7 +194,7 @@ See also the note in @racket[(get-globals)].
 @defproc[(globals->assoc [globals (listof global?) (get-globals)]) (listof (cons/c symbol? any/c))]{
 Returns an association list of the global names and their values.}
 
-@defproc[(globals-interact [globals (get-globals)]) void?]{
+@defproc[(globals-interact [globals (listof global?) (get-globals)]) void?]{
 Produces a command-line interaction with the user to read and write values of @racket[globals].}
 
 @defproc[(string->boolean [s string?]) boolean?]{
