@@ -1,12 +1,12 @@
 #lang racket/base
 (require global)
 
-(define-global *burgers* 1 ; name + default value
-  '("How many burgers do you want to order today?") ; help string
-  exact-nonnegative-integer? ; validation
-  string->number)  ; conversion from input string
+(define-global *burgers* 2     ; name + initial value
+  "Number of burgers to order" ; help string
+  exact-nonnegative-integer?   ; validation
+  string->number)              ; conversion from input string
 
-(void (globals->command-line #:program "get-burgers"))
+(void (globals->command-line #:program "burgers.rkt"))
 
 (printf "You've just ordered ~a burgers.\n" (*burgers*))
 
