@@ -22,7 +22,7 @@ Save this minimal example in the file "burger.rkt":
   exact-nonnegative-integer?      ; validation
   string->number)                 ; conversion from input string
 
-(void (globals->command-line #:program "minimal.rkt"))
+(void (globals->command-line #:program "burgers.rkt"))
 
 (printf "You've just ordered ~a burgers. Thank you.\n" (*burgers*))
 ```
