@@ -17,10 +17,10 @@ Save this minimal example in the file "burger.rkt":
 #lang racket/base
 (require global)
 
-(define-global *burgers* 10       ; name + initial value
-  "Number of burgers to order"    ; help string
-  exact-nonnegative-integer?      ; validation
-  string->number)                 ; conversion from input string
+(define-global *burgers* 10    ; name + initial value
+  "Number of burgers to order" ; help string
+  exact-nonnegative-integer?   ; validation
+  string->number)              ; conversion from input string
 
 (void (globals->command-line #:program "burgers.rkt"))
 
