@@ -220,3 +220,8 @@ Interprets @racketid[s] as a boolean. Equivalent to
                            '("#f" "#false" "false"))
                    #t)]
 }
+
+@defform[(with-globals ([g v] ...) body ...)]{
+ Changes the value of the global @racket[g] to @racket[v] for the dynamic extent of @racket[body ...].
+ Similar to @racket[parameterize], but for globals.}
+

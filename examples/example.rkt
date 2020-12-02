@@ -73,6 +73,9 @@
 (*color*)
 (*color* 'yellow)
 (*color*)
+(with-globals ([*color* 'blue])
+  (displayln (*color*)))
+(*color*)
 
 (when (*interact*)
   (newline)

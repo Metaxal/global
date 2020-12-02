@@ -12,6 +12,7 @@
 (provide define-global
          define-global:category
          define-global:boolean
+         with-globals
 
          global?
          
@@ -255,6 +256,18 @@
        string->boolean
        more-commands)]))
 
+;; TODO: :input-file :input-directory :output-file
+;; check if exists
 
+(define-syntax-rule (with-globals ([g v] ...) body ...)
+  (let* ([gs (list g ...)] ; in case `g` is an expression
+         [old-vs (for/list ([gg (in-list gs)]) (gg))]
+         [vs (list v ...)])
+    (dynamic-wind
+     (λ () (for ([gg (in-list gs)] [x (in-list vs)])
+             (gg x)))
+     (λ () body ...)
+     (λ () (for ([gg (in-list gs)] [x (in-list old-vs)])
+             (gg x))))))
 
 
