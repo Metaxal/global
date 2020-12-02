@@ -30,34 +30,31 @@
   "Maximum depth"
   exact-nonnegative-integer? ; validation
   string->number
-  '("-d" "--depth"))
+  '("-d" "--depth")) ; additional flags
 
 (define-global *comment* "no comment"
   "Some comment"
   string?
   values)
 
+;; A boolean can be defined like a normal global:
 (define-global *abool* #f
   "A boolean"
   boolean?
   string->boolean)
 
-(define-global *bbool* #t
-  "Another boolean"
-  boolean?
-  string->boolean)
+;; Or using a more concise form:
+(define-global:boolean *bbool* #t
+  "Another boolean")
 
-(define colors '(red green blue white black yellow))
-(define-global *color* 'red
-  (format "The color. One of ~a" colors)
-  (λ (v) (memq v colors))
-  string->symbol
+;; Categorical values are easy to define:
+(define-global:category *color* 'red
+  '(red green blue white black yellow)
+  (format "The color.")
   '("-c"))
 
-(define-global *interact* #f
-  "Start global-interaction at the end of the program?"
-  boolean?
-  string->boolean)
+(define-global:boolean *interact* #f
+  "Start global-interaction at the end of the program?")
 
 (displayln "Global values before processing the command line:")
 (globals->assoc)

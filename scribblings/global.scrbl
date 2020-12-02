@@ -97,6 +97,18 @@ to specify short flags.
 @defform[(define-global var args ...)]{
 Shorthand for @racket[(define var (make-global 'var args ...))].}
 
+@defform[(define-global:boolean id init help maybe-more-commands)]{
+Like @racket[define-global] but specializes @racket[valid?] to be @racket[boolean?]
+ and @racket[string->value] to @racket[string->boolean].}
+
+@defform[(define-global:category id init vals help maybe-more-commands)
+         #:grammar ([vals (list expr ...)])]{
+Like @racket[define-global] but specializes @racket[(valid? x)]
+to @racket[(member x vals)] where @racket[vals] is a list of values,
+and uses @racket[read] for @racket[string->value].
+The help string is also augmented to display the available set of values.}
+
+
 
 @defproc*[([(global? [g any/c]) boolean?]
            [(global-name [g global?]) symbol?]

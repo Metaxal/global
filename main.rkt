@@ -2,6 +2,7 @@
 (require (for-syntax racket/base
                      racket/syntax)
          racket/contract/base
+         racket/format
          racket/list
          racket/cmdline
          racket/port
@@ -9,6 +10,8 @@
          text-table)
 
 (provide define-global
+         define-global:category
+         define-global:boolean
 
          global?
          
@@ -221,3 +224,37 @@
          [else
           (displayln "Too many arguments.")])
        (loop)])))
+
+;; A category is a list of atoms read with `read`, i.e.,
+;; numbers, symbols, etc. To read to a string, it must be
+;; quoted on the command line, i.e., "\"a racket string\"".
+;; TODO: use syntax-parse
+(define-syntax define-global:category
+  (syntax-rules ()
+    [(_ id init vals help)
+     (define-global:category id init vals help '())]
+    [(_ id init vals help more-commands)
+     (define-global id init
+       (let ([h1 help] ; in case `help` is not an atom
+             [h2 (apply ~a "One of:" vals #:separator " ")])
+         (if (list? h1)
+           (append h1 (list h2))
+           (list h1 h2)))
+       (λ (x) (member x vals))
+       (λ (s) (with-input-from-string s read))
+       more-commands)]))
+
+(define-syntax define-global:boolean
+  (syntax-rules ()
+    [(_ id init help)
+     (define-global:boolean id init help '())]
+    [(_ id init help more-commands)
+     (define-global id init
+       help
+       boolean?
+       string->boolean
+       more-commands)]))
+
+
+
+
