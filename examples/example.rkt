@@ -71,6 +71,8 @@
 (*max-steps*)
 (*comment*)
 (*color*)
+
+(displayln "\nChanging the value of a global:")
 (*color* 'yellow)
 (*color*)
 (with-globals ([*color* 'blue])
