@@ -184,33 +184,6 @@ Interprets @racketid[s] as a boolean. Equivalent to
  Used as the default argument for @racket[global->cmd-line-rule] and @racket[globals->command-line].
 }
 
-@defproc[(global->cmd-line-rule [g global?]
-                                [#:name->string name->string default-name->string]
-                                [#:boolean-valid? bool? boolean?]
-                                [#:boolean-no-prefix no-prefix "--no-~a"])
-         list?]{
-Returns a rule to be used with @racket[parse-command-line].
-
- Booleans are treated specially on the command line, as they don't require arguments.
-If the validation of @racket[g] is @racket[equal?] to @racket[bool?] then
-the returned rule corresponds to a boolean flag that inverts the @emph{current} value of @racket[g].
-For example,
-if @racket[bool?] is @racket[boolean?],
-then, for
- @racketblock[(define-global abool #t "abool" boolean? string->boolean)]
- the call
- @racket[(global->cmd-line-rule (list abool))]
- (only) produces a rule with the flag @racket["--no-abool"] which sets @racket[abool] to @racket[#f]
- if present on the command line,
-while for
- @racketblock[(define-global abool #f "abool" boolean? string->boolean)]
-it (only) produces the flag @racket["--abool"] which sets abool to @racket[#t].
-Note that for booleans, @racket[more-commands] are used as is (without being negated).
-Setting @racket[bool?] to @racket[#f] treats boolean globals as normal flags that take
-one argument.
-By default, @racket[name->string] removes some leading and trailing special characters.
-}
-
 @defproc[(globals->command-line [#:globals globals (listof global?) (get-globals)]
                                 [#:name->string name->string (-> symbol? string?) default-name->string]
                                 [#:boolean-valid? bool? (-> any/c any/c) boolean?]
@@ -220,17 +193,43 @@ By default, @racket[name->string] removes some leading and trailing special char
                                 [#:program program string? "<prog>"]
                                 [trailing-arg-name string?] ...)
          any]{
-Produces a command line parser via @racket[parse-command-line]
- (refer to the latter for general information).
+ Produces a command line parser via @racket[parse-command-line]
+ for all the global variables @racket[globals].
 
-See @racket[global->cmd-line-rule] for some of the keywords and for more information about boolean flags.
-
-Each list of globals within @racket[mutex-groups] are placed in a separate @racketid[once-any] group in
+ See @racket[parse-command-line] for general information.
+ Each list of globals within @racket[mutex-groups] are placed in a separate @racketid[once-any] group in
 @racket[parse-command-line].
+Multi flags are not supported by globals.
 
-Repeated flags are not supported by globals.
+ See @racket[global->cmd-line-rule] for some of the keywords and for more information about boolean flags.
 
 See also the note in @racket[(get-globals)].
+}
+
+@defproc[(global->cmd-line-rule [g global?]
+                                [#:name->string name->string default-name->string]
+                                [#:boolean-valid? bool? boolean?]
+                                [#:boolean-no-prefix no-prefix "--no-~a"])
+         list?]{
+Returns a rule for @racket[parse-command-line]. Used by @racket[globals->command-line].
+
+ Booleans are treated specially on the command line, as they don't require arguments.
+If the validation of @racket[g] is @racket[equal?] to @racket[bool?] then
+the returned rule corresponds to a boolean flag that inverts the @emph{current} value of @racket[g].
+For example,
+if @racket[bool?] is @racket[boolean?],
+then, for
+ @racketblock[(define-global:boolean *abool* #t "a boolean")]
+ the call
+ @racket[(global->cmd-line-rule *abool*)]
+ (only) produces a rule with the flag @racket["--no-abool"] which sets @racket[*abool*] to @racket[#f]
+ if present on the command line, while for
+ @racketblock[(define-global:boolean *abool* #t "a boolean")]
+it (only) produces the flag @racket["--abool"] which sets @racket[*abool*] to @racket[#t].
+Note that for booleans, @racket[more-commands] are used as is (without being negated automatically).
+Setting @racket[bool?] to @racket[#f] treats boolean globals as normal flags that take
+one argument.
+By default, @racket[name->string] removes some leading and trailing special characters.
 }
 
 @section{Text interaction}
