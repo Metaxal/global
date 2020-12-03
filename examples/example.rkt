@@ -1,6 +1,7 @@
 #lang racket/base
 
-(require global)
+(require global
+         racket/pretty)
 
 ;;; Try the following calls from the command line:
 ;;; 1) racket -l global/example
@@ -57,7 +58,7 @@
   "Start global-interaction at the end of the program?")
 
 (displayln "Global values before processing the command line:")
-(globals->assoc)
+(pretty-print (globals->assoc))
 
 (define file
   (globals->command-line #:program "global-example"
@@ -65,7 +66,7 @@
                          "file" "dir"))
 
 (displayln "\nGlobal values after processing the command line:")
-(globals->assoc)
+(pretty-print (globals->assoc))
 
 (displayln "\nIndividual global values:")
 (*max-steps*)
@@ -76,7 +77,7 @@
 (*color* 'yellow)
 (*color*)
 (with-globals ([*color* 'blue])
-  (displayln (*color*)))
+  (println (*color*)))
 (*color*)
 
 (when (*interact*)

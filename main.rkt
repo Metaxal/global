@@ -113,11 +113,13 @@
            str))
   (set-global-get! g v))
 
+(define (default-name->string n)
+  (string-trim (symbol->string n)
+               #px"[\\s*?]+"))
+
 ;; Returns a rule for parse-command-line.
 (define (global->cmd-line-rule g
-                               #:name->string
-                               [name->string (λ (n) (string-trim (symbol->string n)
-                                                                 #px"[\\s*?]+"))]
+                               #:name->string [name->string default-name->string]
                                #:boolean-valid? [bool? boolean?]
                                #:boolean-no-prefix [no-prefix "--no-~a"])
   (unless (global? g)
@@ -138,6 +140,7 @@
 ;; TODO: multi with `update` of the global
 ;; See `global->cmd-line` for bool? and no-prefix.
 (define (globals->command-line #:globals [globals (get-globals)]
+                               #:name->string [name->string default-name->string]
                                #:boolean-valid? [bool? boolean?]
                                #:boolean-no-prefix [no-prefix "--no-~a"]
                                #:mutex-groups [mutex-groups '()]
@@ -145,7 +148,10 @@
                                #:program [program "<prog>"]
                                . arg-names)
   (define (g->cmd g)
-    (global->cmd-line-rule g #:boolean-valid? bool? #:boolean-no-prefix no-prefix))
+    (global->cmd-line-rule g
+                           #:name->string name->string
+                           #:boolean-valid? bool?
+                           #:boolean-no-prefix no-prefix))
   (parse-command-line
    program argv
    (cons

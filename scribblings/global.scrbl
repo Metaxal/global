@@ -70,7 +70,7 @@ By contrast to parameters, globals
 
 Suggestions, questions or issues? File an @hyperlink["https://github.com/Metaxal/global/issues"]{issue}.
 
-
+@section{Globals}
 
 @defproc[(make-global [name symbol?]
                       [init any/c]
@@ -158,10 +158,30 @@ Defining local globals is discouraged, and using submodules is preferred (such a
 }
 }
 
+@defproc[(globals->assoc [globals (listof global?) (get-globals)]) (listof (cons/c symbol? any/c))]{
+Returns an association list of the global names and their values.}
+
+@defproc[(string->boolean [s string?]) boolean?]{
+Interprets @racketid[s] as a boolean. Equivalent to
+ @racketblock[(and (member (string-downcase (string-trim s))
+                           '("#f" "#false" "false"))
+                   #t)]
+}
+
+@defform[(with-globals ([g v] ...) body ...)]{
+ Changes the value of the global @racket[g] to @racket[v] for the dynamic extent of @racket[body ...].
+ Similar to @racket[parameterize], but for globals.}
+
+
+@section{Command line}
+
+@defproc[(default-name->string [sym symbol?]) string?]{
+ Returns a string made of @racket[sym] where the surrounding @racketid[*] and spaces have been removed.
+ Used as the default argument for @racket[global->cmd-line-rule] and @racket[globals->command-line].
+}
 
 @defproc[(global->cmd-line-rule [g global?]
-                                [#:name->string name->string (λ (n) (string-trim (symbol->string n)
-                                                                                 #px"[\\s*?]+"))]
+                                [#:name->string name->string default-name->string]
                                 [#:boolean-valid? bool? boolean?]
                                 [#:boolean-no-prefix no-prefix "--no-~a"])
          list?]{
@@ -188,6 +208,7 @@ By default, @racket[name->string] removes some leading and trailing special char
 }
 
 @defproc[(globals->command-line [#:globals globals (listof global?) (get-globals)]
+                                [#:name->string name->string (-> symbol? string?) default-name->string]
                                 [#:boolean-valid? bool? (-> any/c any/c) boolean?]
                                 [#:boolean-no-prefix no-prefix string? "--no-~a"]
                                 [#:mutex-groups mutex-groups (listof (listof global?)) '()]
@@ -198,7 +219,7 @@ By default, @racket[name->string] removes some leading and trailing special char
 Produces a command line parser via @racket[parse-command-line]
  (refer to the latter for general information).
 
-See @racket[global->cmd-line-rule] for more information about boolean flags.
+See @racket[global->cmd-line-rule] for some of the keywords and for more information about boolean flags.
 
 Each list of globals within @racket[mutex-groups] are placed in a separate @racketid[once-any] group in
 @racket[parse-command-line].
@@ -208,20 +229,8 @@ Repeated flags are not supported by globals.
 See also the note in @racket[(get-globals)].
 }
 
-@defproc[(globals->assoc [globals (listof global?) (get-globals)]) (listof (cons/c symbol? any/c))]{
-Returns an association list of the global names and their values.}
+@section{Text interaction}
 
 @defproc[(globals-interact [globals (listof global?) (get-globals)]) void?]{
 Produces a command-line interaction with the user to read and write values of @racket[globals].}
-
-@defproc[(string->boolean [s string?]) boolean?]{
-Interprets @racketid[s] as a boolean. Equivalent to
- @racketblock[(and (member (string-downcase (string-trim s))
-                           '("#f" "#false" "false"))
-                   #t)]
-}
-
-@defform[(with-globals ([g v] ...) body ...)]{
- Changes the value of the global @racket[g] to @racket[v] for the dynamic extent of @racket[body ...].
- Similar to @racket[parameterize], but for globals.}
 
