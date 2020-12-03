@@ -101,6 +101,10 @@ Shorthand for @racket[(define var (make-global 'var args ...))].}
 Like @racket[define-global] but specializes @racket[valid?] to be @racket[boolean?]
  and @racket[string->value] to @racket[string->boolean].}
 
+@defform[(define-global:string id init help maybe-more-commands)]{
+Like @racket[define-global] but specializes @racket[valid?] to be @racket[string?]
+ and @racket[string->value] to @racket[values].}
+
 @defform[(define-global:category id init vals help maybe-more-commands)
          #:grammar ([vals (list expr ...)])]{
 Like @racket[define-global] but specializes @racket[(valid? x)]

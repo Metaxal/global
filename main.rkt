@@ -10,8 +10,9 @@
          text-table)
 
 (provide define-global
-         define-global:category
          define-global:boolean
+         define-global:string
+         define-global:category
          with-globals
 
          global?
@@ -260,6 +261,17 @@
        help
        boolean?
        string->boolean
+       more-commands)]))
+
+(define-syntax define-global:string
+  (syntax-rules ()
+    [(_ id init help)
+     (define-global:string id init help '())]
+    [(_ id init help more-commands)
+     (define-global id init
+       help
+       string?
+       values
        more-commands)]))
 
 ;; TODO: :input-file :input-directory :output-file

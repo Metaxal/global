@@ -20,6 +20,10 @@
 
 ;; Note that globals can be defined in a different module than the call to `globals->command-line`
 ;; (as long as the former module is required by the latter).
+
+;========================;
+;=== Global variables ===;
+;========================;
   
 (define-global *max-steps* 100
   '("Maximum number of steps"
@@ -33,20 +37,22 @@
   string->number
   '("-d" "--depth")) ; additional flags
 
-(define-global *comment* "no comment"
-  "Some comment"
-  string?
-  values)
+(define-global:string *comment* "no comment"
+  "Some comment")
 
-;; A boolean can be defined like a normal global:
-(define-global *abool* #f
-  "A boolean"
+;; A boolean global defined in a concise form.
+;; Note that since *abool* is #f by default,
+;; the flag '--abool' is generated.
+(define-global:boolean *abool* #f
+  "A boolean")
+
+;; Or using a more general definition.
+;; Note that since *bbool* is #t by default,
+;; the flag '--no-bbool' is generated.
+(define-global *bbool* #t
+  "Another boolean"
   boolean?
   string->boolean)
-
-;; Or using a more concise form:
-(define-global:boolean *bbool* #t
-  "Another boolean")
 
 ;; Categorical values are easy to define:
 (define-global:category *color* 'red
@@ -56,6 +62,10 @@
 
 (define-global:boolean *interact* #f
   "Start global-interaction at the end of the program?")
+
+;============================;
+;=== Command line parsing ===;
+;============================;
 
 (displayln "Global values before processing the command line:")
 (pretty-print (globals->assoc))
@@ -67,6 +77,10 @@
 
 (displayln "\nGlobal values after processing the command line:")
 (pretty-print (globals->assoc))
+
+;==========================;
+;=== Further processing ===;
+;==========================;
 
 (displayln "\nIndividual global values:")
 (*max-steps*)
