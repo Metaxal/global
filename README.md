@@ -39,7 +39,7 @@ racket -l global/examples/minimal -- --burgers 3
 ```
 For a more extensive example, try
 ```shell
-racket -l global/examples/examples -- --help
+racket -l global/examples/example -- --help
 ```
 
 See the [docs](https://pkg-build.racket-lang.org/doc/global@global/index.html).
