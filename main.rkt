@@ -7,7 +7,8 @@
          racket/cmdline
          racket/port
          racket/string
-         text-table)
+         text-table
+         syntax/parse/define)
 
 (provide define-global
          define-global:boolean
@@ -89,9 +90,9 @@
 
 ;; Helper to avoid typing the name twice (and ensure consistency).
 ;; Use `make-global` to have more flexibility on the variable name and the command-line name.
-(define-syntax-rule (define-global var args ...) 
+(define-simple-macro (define-global var:id init help valid? string->value (~optional more-commands))
   (define var
-    (make-global 'var args ...)))
+    (make-global 'var init help valid? string->value (~? more-commands))))
 
 (define (globals->assoc [globals (get-globals)])
   (map (λ (g) (cons (global-name g) (g)))

@@ -4,7 +4,7 @@
                     racket/base]]
 
 @title{global: Global variables with command-line interaction}
-@author{laurent.orseau@"@"gmail.com}
+@author{Laurent Orseau}
 
 @defmodule[global]
 
@@ -94,8 +94,8 @@ before setting the corresponding global to this value.
 to specify short flags.
 }
 
-@defform[(define-global var args ...)]{
-Shorthand for @racket[(define var (make-global 'var args ...))].}
+@defform[(define-global var init help valid? string->value [more-commands])]{
+Shorthand for @racket[(define var (make-global 'var ....))].}
 
 @defform[(define-global:boolean id init help maybe-more-commands)]{
 Like @racket[define-global] but specializes @racket[valid?] to be @racket[boolean?]
