@@ -4,7 +4,7 @@
                "base"))
 (define build-deps '("scribble-lib" "racket-doc" "rackunit-lib"))
 (define scribblings '(("scribblings/global.scrbl" ())))
-(define pkg-desc "Description Here")
+(define pkg-desc "Global: global variables for simple command line flags")
 (define version "0.0")
 (define pkg-authors '(lorseau))
 
