@@ -148,6 +148,7 @@
                                #:mutex-groups [mutex-groups '()]
                                #:argv [argv (current-command-line-arguments)]
                                #:program [program "<prog>"]
+                               #:usage-help [usage-help '()]
                                . arg-names)
   (define (g->cmd g)
     (global->cmd-line-rule g
@@ -156,7 +157,8 @@
                            #:boolean-no-prefix no-prefix))
   (parse-command-line
    program argv
-   (cons
+   (list*
+    `(usage-help . ,usage-help)
     `(once-each
       ,@(map g->cmd (remove* (flatten mutex-groups) globals eq?)))
     (for/list ([gr (in-list mutex-groups)])

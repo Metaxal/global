@@ -191,6 +191,7 @@ Interprets @racketid[s] as a boolean. Equivalent to
                                 [#:mutex-groups mutex-groups (listof (listof global?)) '()]
                                 [#:argv argv (vectorof (and/c string? immutable?)) (current-command-line-arguments)]
                                 [#:program program string? "<prog>"]
+                                [#:usage-help usage (listof string?) '()]
                                 [trailing-arg-name string?] ...)
          any]{
  Produces a command line parser via @racket[parse-command-line]
