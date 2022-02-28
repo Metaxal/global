@@ -2,10 +2,8 @@
 
 (require global)
 
-(define-global *counter* 0
-  "Counter"
-  number?
-  string->number)
+(define-global:natural0 *counter* 0
+  "Counter")
 
 (define counter 0)
 

@@ -97,13 +97,24 @@ to specify short flags.
 @defform[(define-global var init help valid? string->value [more-commands])]{
 Shorthand for @racket[(define var (make-global 'var ....))].}
 
-@defform[(define-global:boolean id init help maybe-more-commands)]{
-Like @racket[define-global] but specializes @racket[valid?] to be @racket[boolean?]
- and @racket[string->value] to @racket[string->boolean].}
-
-@defform[(define-global:string id init help maybe-more-commands)]{
-Like @racket[define-global] but specializes @racket[valid?] to be @racket[string?]
- and @racket[string->value] to @racket[values].}
+@deftogether[
+ (@defform[(define-global:boolean  id init help maybe-more-commands)]
+   @defform[(define-global:string   id init help maybe-more-commands)]
+   @defform[(define-global:natural0 id init help maybe-more-commands)]
+   @defform[(define-global:natural1 id init help maybe-more-commands)]
+   @defform[(define-global:integer  id init help maybe-more-commands)]
+   @defform[(define-global:real     id init help maybe-more-commands)]
+   @defform[(define-global:rational id init help maybe-more-commands)])]{
+Like @racket[define-global] but specialize @racket[valid?] to be, respectively,
+ @racket[boolean?],
+ @racket[string?],
+ @racket[exact-nonnegative-integer?],
+ @racket[exact-positive-integer?],
+ @racket[exact-integer?],
+ @racket[real?],
+ @racket[rational?],
+ and specializes @racket[string->value] to @racket[string->boolean], @racket[values], and
+ @racket[string->number].}
 
 @defform[(define-global:category id init vals help maybe-more-commands)
          #:grammar ([vals (list expr ...)])]{

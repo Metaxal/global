@@ -14,6 +14,11 @@
          define-global:boolean
          define-global:string
          define-global:category
+         define-global:natural0
+         define-global:natural1
+         define-global:integer
+         define-global:real
+         define-global:rational
          with-globals
 
          global?
@@ -255,27 +260,25 @@
        (λ (s) (with-input-from-string s read))
        more-commands)]))
 
-(define-syntax define-global:boolean
+(define-syntax-rule (define-global-definer definer valid? string->x)
+  (define-syntax definer
   (syntax-rules ()
     [(_ id init help)
-     (define-global:boolean id init help '())]
+     (definer id init help '())]
     [(_ id init help more-commands)
      (define-global id init
        help
-       boolean?
-       string->boolean
-       more-commands)]))
+       valid?
+       string->x
+       more-commands)])))
 
-(define-syntax define-global:string
-  (syntax-rules ()
-    [(_ id init help)
-     (define-global:string id init help '())]
-    [(_ id init help more-commands)
-     (define-global id init
-       help
-       string?
-       values
-       more-commands)]))
+(define-global-definer define-global:boolean  boolean?                   string->boolean)
+(define-global-definer define-global:string   string?                    values)
+(define-global-definer define-global:natural0 exact-nonnegative-integer? string->number)
+(define-global-definer define-global:natural1 exact-positive-integer?    string->number)
+(define-global-definer define-global:integer  exact-integer?             string->number)
+(define-global-definer define-global:real     real?                      string->number)
+(define-global-definer define-global:rational rational?                  string->number)
 
 ;; TODO: :input-file :input-directory :output-file
 ;; check if exists

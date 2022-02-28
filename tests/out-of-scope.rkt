@@ -3,19 +3,15 @@
 (require global
          rackunit)
 
-(define-global *a* 10
-  "num"
-  exact-positive-integer?
-  string->number)
+(define-global:natural1 *a* 10
+  "num")
 
 (check-equal? (map global-name (get-globals))
               '(*a*))
 
 (let ()
-  (define-global *b* 10
-    "num"
-    exact-positive-integer?
-    string->number)
+  (define-global:natural1 *b* 10
+    "num")
   (check-equal? (map global-name (get-globals))
                 '(*a* *b*)))
 
