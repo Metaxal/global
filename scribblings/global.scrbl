@@ -56,6 +56,9 @@ in a module A is shared between all modules that require A.
 
 Note that a global defined in module A that is transitively required by module B
 can be fully accessed in module B even if A does not export any identifier.
+Globals can be removed from the command line
+with @racket[(globals->command-line (remove *my-global* (get-globals)))].
+
 
 By convention, globals' identifiers are surrounded by @racketid[*]. The value of a global @racket[*my-global*] can be retrieved with @racket[(*my-global*)]
 and set with @racket[(*my-global* some-new-value)].
