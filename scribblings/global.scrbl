@@ -236,9 +236,10 @@ then, for
  @racket[(global->cmd-line-rule *abool*)]
  (only) produces a rule with the flag @racket["--no-abool"] which sets @racket[*abool*] to @racket[#f]
  if present on the command line, while for
- @racketblock[(define-global:boolean *abool* #t "a boolean")]
+ @racketblock[(define-global:boolean *abool* #f "a boolean")]
 it (only) produces the flag @racket["--abool"] which sets @racket[*abool*] to @racket[#t].
-Note that for booleans, @racket[more-commands] are used as is (without being negated automatically).
+The additional flags set in @racket[more-commands] always @emph{invert} the default value of the
+global.
 Setting @racket[bool?] to @racket[#f] treats boolean globals as normal flags that take
 one argument.
 By default, @racket[name->string] removes some leading and trailing special characters.
