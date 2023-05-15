@@ -10,3 +10,4 @@
 
 (define test-omit-paths '("examples/" "tests/define-global-stress-test.rkt"))
 (define test-include-paths '("tests/out-of-scope.rkt"))
+(define license '(Apache-2.0 OR MIT))
