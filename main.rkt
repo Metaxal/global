@@ -292,6 +292,6 @@
              (gg x)))
      (λ () body ...)
      (λ () (for ([gg (in-list gs)] [x (in-list old-vs)])
-             (gg x))))))
+             (set-global-get! gg x))))))
 
 
