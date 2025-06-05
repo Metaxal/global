@@ -1,7 +1,7 @@
 #lang racket/base
 (require (for-syntax racket/base
                      racket/syntax)
-         racket/contract/base
+         racket/contract
          racket/format
          racket/list
          racket/cmdline
@@ -22,15 +22,9 @@
          with-globals
 
          global?
+         make-global ; contracted below
          
          (contract-out
-          [make-global (->* [symbol?
-                             any/c
-                             (or/c string? (listof string?))
-                             procedure?
-                             procedure?]
-                            [(listof string?)]
-                            global?)]
           [global-name              (-> global? any)]
           [global-help              (-> global? any)]
           [global-valid?            (-> global? any)]
@@ -82,16 +76,14 @@
 (define (get-globals)
   (reverse (filter-map weak-box-value globals)))
 
-(define (make-global name init help valid? string->value [more-commands '()])
-  (unless (or (string? help)
-              (and (list? help) (andmap string? help)))
-    (raise-argument-error 'define-global "(or/c string? (listof string?))" 2 name init help valid? string->value more-commands))
-  (unless (procedure? valid?)
-    (raise-argument-error 'define-global "procedure?" 3 name init help valid? string->value more-commands))
-  (unless (procedure? string->value)
-    (raise-argument-error 'define-global "procedure?" 4 name init help valid? string->value more-commands))
-  (unless (and (list? more-commands) (andmap string? more-commands))
-    (raise-argument-error 'define-global "(listof string?)" 5 name init help valid? string->value more-commands))
+(define/contract (make-global name init help valid? string->value [more-commands '()])
+  (->* [symbol?
+        any/c
+        (or/c string? (listof string?))
+        procedure?
+        procedure?]
+       [(listof string?)]
+       global?)
   (define g
     (global name
             init

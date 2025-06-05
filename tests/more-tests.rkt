@@ -34,7 +34,7 @@
                                        (exn-message exn))))
            (λ () (define-global *truc2* #f "help string" values '("-r")) (void)))
 (check-exn (λ (exn) (and (exn:fail:contract? exn)
-                         (regexp-match (regexp-quote "expected: (listof string?)")
+                         (regexp-match (regexp-quote "expected: list?")
                                        (exn-message exn))))
            (λ () (define-global *truc3* #f "" values values "-r") (void)))
 (check-exn (λ (exn) (and (exn:fail:contract? exn)
