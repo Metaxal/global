@@ -1,5 +1,5 @@
 #lang racket/base
-(require global
+(require "../main.rkt"
          rackunit)
 
 (define-global *v* #() "vec"
@@ -24,3 +24,20 @@
    ;; file has been deleted in-between.
    (with-globals ([*v* #(3)])
      (vector-set! v2 0 -1))))
+
+(check-exn (λ (exn) (and (exn:fail:contract? exn)
+                         (regexp-match (regexp-quote "expected: (or/c string? (listof string?))")
+                                       (exn-message exn))))
+           (λ () (define-global *truc1* #f values values '("-r")) (void)))
+(check-exn (λ (exn) (and (exn:fail:contract? exn)
+                         (regexp-match (regexp-quote "expected: procedure?")
+                                       (exn-message exn))))
+           (λ () (define-global *truc2* #f "help string" values '("-r")) (void)))
+(check-exn (λ (exn) (and (exn:fail:contract? exn)
+                         (regexp-match (regexp-quote "expected: list?")
+                                       (exn-message exn))))
+           (λ () (define-global *truc3* #f "" values values "-r") (void)))
+(check-exn (λ (exn) (and (exn:fail:contract? exn)
+                         (regexp-match (regexp-quote "expected: procedure?")
+                                       (exn-message exn))))
+           (λ () (define-global *truc4* #f "help" "not-a-procedure" values) (void)))
