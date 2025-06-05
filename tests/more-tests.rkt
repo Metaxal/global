@@ -1,5 +1,5 @@
 #lang racket/base
-(require global
+(require "../main.rkt"
          rackunit)
 
 (define-global *v* #() "vec"
@@ -25,28 +25,19 @@
    (with-globals ([*v* #(3)])
      (vector-set! v2 0 -1))))
 
-(test-suite
-  "define-global error handling"
-  (test-case "Invalid help - procedure"
-    (check-exn (λ (exn) (and (exn:fail:contract? exn)
-                                (regexp-match #rx"^define-global: expects \\(or/c string\\? \\(listof string\\?\\)\\) as argument 3, given: #<procedure:values>.*"
-                                              (exn-message exn))))
-               (λ () (define-global *truc1* #f values values '("-r")) (void))))
-
-  (test-case "Invalid string->value - list of strings"
-    (check-exn (λ (exn) (and (exn:fail:contract? exn)
-                                (regexp-match #rx"^define-global: expects procedure\\? as argument 5, given: '\\(\"-r\"\\).*"
-                                              (exn-message exn))))
-               (λ () (define-global *truc2* #f "help string" values '("-r")) (void))))
-
-  (test-case "Invalid more-commands - string"
-    (check-exn (λ (exn) (and (exn:fail:contract? exn)
-                                (regexp-match #rx"^define-global: expects \\(listof string\\?\\) as argument 6, given: \"-r\".*"
-                                              (exn-message exn))))
-               (λ () (define-global *truc3* #f "" values values "-r") (void))))
-
-  (test-case "Invalid valid? - string"
-    (check-exn (λ (exn) (and (exn:fail:contract? exn)
-                                (regexp-match #rx"^define-global: expects procedure\\? as argument 4, given: \"not-a-procedure\".*"
-                                              (exn-message exn))))
-               (λ () (define-global *truc4* #f "help" "not-a-procedure" values) (void)))))
+(check-exn (λ (exn) (and (exn:fail:contract? exn)
+                         (regexp-match (regexp-quote "expected: (or/c string? (listof string?))")
+                                       (exn-message exn))))
+           (λ () (define-global *truc1* #f values values '("-r")) (void)))
+(check-exn (λ (exn) (and (exn:fail:contract? exn)
+                         (regexp-match (regexp-quote "expected: procedure?")
+                                       (exn-message exn))))
+           (λ () (define-global *truc2* #f "help string" values '("-r")) (void)))
+(check-exn (λ (exn) (and (exn:fail:contract? exn)
+                         (regexp-match (regexp-quote "expected: (listof string?)")
+                                       (exn-message exn))))
+           (λ () (define-global *truc3* #f "" values values "-r") (void)))
+(check-exn (λ (exn) (and (exn:fail:contract? exn)
+                         (regexp-match (regexp-quote "expected: procedure?")
+                                       (exn-message exn))))
+           (λ () (define-global *truc4* #f "help" "not-a-procedure" values) (void)))
