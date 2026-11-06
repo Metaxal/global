@@ -105,11 +105,13 @@
        globals))
 
 ;; See "Reading Booleans" in the Reference.
-;; We add some common cases for the command line
+;; We add some common cases for the command line.
+;; Returns `'invalid` on unrecognized strings so `boolean?` rejects them.
 (define (string->boolean s)
-  (and (member (string-downcase (string-trim s))
-              '("#f" "#false" "false"))
-       #t))
+  (case (string-downcase (string-trim s))
+    [("#t" "#true" "true") #t]
+    [("#f" "#false" "false") #f]
+    [else 'invalid]))
 
 (define (global-set-from-string! g str)
   (define v ((global-string->value g) str))
@@ -133,13 +135,41 @@
   (unless (global? g)
     (raise-argument-error 'global->cmd-line-rule global? g))
   (if (equal? (global-valid? g) bool?)
-    `[(,(format (if (g) no-prefix "--~a")
-                (name->string (global-name g)))
-       ,@(global-more-commands g))
-      ,(λ (flag) (global-unsafe-update! g not))
-      (,(global-help g))]
-    `[(,(format "--~a" (name->string (global-name g)))
-       ,@(global-more-commands g))
+    (let ()
+      (define neg-prefix
+        (if (string-suffix? no-prefix "~a")
+            (substring no-prefix 0 (- (string-length no-prefix) 2))
+            (format no-prefix "")))
+      (define more-flags
+        (for/list ([flag (in-list (global-more-commands g))])
+          (cond
+            [(or (not (string-prefix? flag "-"))
+                 (equal? flag "-")
+                 (equal? flag "--"))
+             (raise-arguments-error 'global->cmd-line-rule
+                                    "invalid command-line flag in more-commands"
+                                    "flag" flag
+                                    "global" (global-name g))]
+            [(and (non-empty-string? neg-prefix)
+                  (string-prefix? flag neg-prefix))
+             (raise-arguments-error 'global->cmd-line-rule
+                                    "boolean more-commands must use positive flag names (without --no- prefix)"
+                                    "flag" flag
+                                    "global" (global-name g))]
+            [(string-prefix? flag "--")
+             (if (g)
+                 (format no-prefix (substring flag 2))
+                 flag)]
+            [else flag])))
+      `[(,@(remove-duplicates
+            (cons (format (if (g) no-prefix "--~a")
+                          (name->string (global-name g)))
+                  more-flags)))
+        ,(λ (flag) (global-unsafe-update! g not))
+        (,(global-help g))])
+    `[(,@(remove-duplicates
+          (cons (format "--~a" (name->string (global-name g)))
+                (global-more-commands g))))
       ,(λ (flag v) (global-set-from-string! g v))
       (,(global-help g)
        ,(format "~a" (g)))]))

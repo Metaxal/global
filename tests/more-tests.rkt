@@ -41,3 +41,75 @@
                          (regexp-match (regexp-quote "expected: procedure?")
                                        (exn-message exn))))
            (λ () (define-global *truc4* #f "help" "not-a-procedure" values) (void)))
+
+;; string->boolean and global-set-from-string!
+(for ([s (in-list '("#t" "#true" "true" " TRUE "))])
+  (check-equal? (string->boolean s) #t))
+(for ([s (in-list '("#f" "#false" "false" " #F "))])
+  (check-equal? (string->boolean s) #f))
+(check-equal? (string->boolean "banana") 'invalid)
+
+(define-global:boolean *b* #f "a bool")
+(global-set-from-string! *b* "true")
+(check-equal? (*b*) #t)
+(global-set-from-string! *b* "#f")
+(check-equal? (*b*) #f)
+(check-exn exn:fail? (λ () (global-set-from-string! *b* "banana")))
+(check-equal? (*b*) #f)
+
+;; Boolean more-commands negation prefixing & dynamic sensitivity
+(define-global:boolean *g* #t "bool with aliases" '("--alias" "-a"))
+(check-equal? (car (global->cmd-line-rule *g*))
+              '("--no-g" "--no-alias" "-a"))
+
+(*g* #t)
+(void (globals->command-line #:globals (list *g*) #:argv #("--no-alias")))
+(check-equal? (*g*) #f)
+
+(*g* #t)
+(void (globals->command-line #:globals (list *g*) #:argv #("-a")))
+(check-equal? (*g*) #f)
+
+(*g* #t)
+(check-exn exn:fail?
+           (λ () (globals->command-line #:globals (list *g*) #:argv #("--alias"))))
+
+;; Mutating (*g* #f) before calling globals->command-line flips expected flags to positive
+(*g* #f)
+(check-equal? (car (global->cmd-line-rule *g*))
+              '("--g" "--alias" "-a"))
+
+(*g* #f)
+(void (globals->command-line #:globals (list *g*) #:argv #("--alias")))
+(check-equal? (*g*) #t)
+
+(*g* #f)
+(void (globals->command-line #:globals (list *g*) #:argv #("-a")))
+(check-equal? (*g*) #t)
+
+(*g* #f)
+(check-exn exn:fail?
+           (λ () (globals->command-line #:globals (list *g*) #:argv #("--no-alias"))))
+
+;; Passing "--no-..." in more-commands for a boolean global raises an error
+(define-global:boolean *bad-neg* #t "bad neg" '("--no-alias"))
+(check-exn exn:fail:contract?
+           (λ () (global->cmd-line-rule *bad-neg*)))
+
+;; Malformed flag in more-commands raises an error
+(define-global:boolean *bad-flag* #f "bad flag" '("alias"))
+(check-exn exn:fail:contract?
+           (λ () (global->cmd-line-rule *bad-flag*)))
+
+;; Flag deduplication
+(define-global:boolean *foo* #f "doc" '("--foo" "--bar" "--foo"))
+(check-equal? (car (global->cmd-line-rule *foo*))
+              '("--foo" "--bar"))
+(*foo* #t)
+(check-equal? (car (global->cmd-line-rule *foo*))
+              '("--no-foo" "--no-bar"))
+
+(define-global:integer *num* 0 "num doc" '("--num" "-n" "-n"))
+(check-equal? (car (global->cmd-line-rule *num*))
+              '("--num" "-n"))
+

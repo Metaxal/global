@@ -179,11 +179,14 @@ Defining local globals is discouraged, and using submodules is preferred (such a
 @defproc[(globals->assoc [globals (listof global?) (get-globals)]) (listof (cons/c symbol? any/c))]{
 Returns an association list of the global names and their values.}
 
-@defproc[(string->boolean [s string?]) boolean?]{
-Interprets @racketid[s] as a boolean. Equivalent to
- @racketblock[(and (member (string-downcase (string-trim s))
-                           '("#f" "#false" "false"))
-                   #t)]
+@defproc[(string->boolean [s string?]) (or/c boolean? 'invalid)]{
+Interprets @racketid[s] as a boolean, returning @racket[#t] for @racket["#t"], @racket["#true"], or @racket["true"],
+@racket[#f] for @racket["#f"], @racket["#false"], or @racket["false"] (after trimming whitespace and converting to lowercase),
+and @racket['invalid] otherwise (so that @racket[boolean?] rejects unrecognized strings). Equivalent to:
+ @racketblock[(case (string-downcase (string-trim s))
+                [("#t" "#true" "true") #t]
+                [("#f" "#false" "false") #f]
+                [else 'invalid])]
 }
 
 @defform[(with-globals ([g v] ...) body ...)]{
@@ -241,8 +244,11 @@ then, for
  if present on the command line, while for
  @racketblock[(define-global:boolean *abool* #f "a boolean")]
 it (only) produces the flag @racket["--abool"] which sets @racket[*abool*] to @racket[#t].
-The additional flags set in @racket[more-commands] always @emph{invert} the default value of the
-global.
+The additional flags set in @racket[more-commands] always @emph{invert} the current value of the
+global: positive long flags @racket["--<name>"] in @racket[more-commands] are automatically prefixed
+with @racket[no-prefix] (producing @racket["--no-<name>"]) when @racket[(g)] is true, while short flags
+@racket["-<char>"] remain unchanged. Passing a flag in @racket[more-commands] that already starts with
+the negative prefix (e.g., @racket["--no-..."]) raises an error. Duplicate flags in a rule are removed.
 Setting @racket[bool?] to @racket[#f] treats boolean globals as normal flags that take
 one argument.
 By default, @racket[name->string] removes some leading and trailing special characters.
